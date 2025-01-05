@@ -21,9 +21,8 @@ export namespace Loader {
 	* 
 	* ```
 	*/
-	export async function load({ paths, useLua = false }: { paths: string[]; useLua: boolean }) {
-		const importer =
-			(useLua ? require(ReplicatedStorage.WaitForChild("rbxts_include").WaitForChild("RuntimeLib") as ModuleScript) : (_G as object)[script as never]) as Importer
+	export async function load({ paths }: { paths: string[];  }) {
+		const importer = (_G as object)[script as never] as Importer
 		const modules = Loader.getModules(paths);
 
 		const startTime = os.clock();
