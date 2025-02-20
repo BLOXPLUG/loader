@@ -1,4 +1,4 @@
-import { ReplicatedStorage, RunService, ServerScriptService, StarterPlayer } from "@rbxts/services";
+import { InsertService, ReplicatedStorage, RunService, ServerScriptService, StarterPlayer } from "@rbxts/services";
 
 interface Loadable {
 	onInit?(): undefined;
@@ -9,6 +9,9 @@ interface Loadable {
 interface Importer {
 	import: (script: LuaSourceContainer, module: ModuleScript) => Loadable;
 }
+
+const IS_SERVER = RunService.IsServer()
+const FOLDER_KEYWORD = IS_SERVER ? "services" : "controllers"
 
 export namespace Loader {
 	/**
@@ -21,9 +24,9 @@ export namespace Loader {
 	* 
 	* ```
 	*/
-	export async function load({ paths }: { paths: string[];  }) {
+	export async function load() {
 		const importer = (_G as object)[script as never] as Importer
-		const modules = Loader.getModules(paths);
+		const modules = Loader.getModules();
 
 		const startTime = os.clock();
 		const preloaded = (await Promise.all(
@@ -75,22 +78,24 @@ export namespace Loader {
 		return [module.Name, classInstance];
 	}
 
-	export function getModules(paths: string[]) {
-		return [
-			ReplicatedStorage.WaitForChild("src").WaitForChild("services") as Folder,
-			RunService.IsServer()
-				? (ServerScriptService.WaitForChild("src").WaitForChild("services") as Folder)
-				: (StarterPlayer.WaitForChild("StarterPlayerScripts")
-					.WaitForChild("src")
-					.WaitForChild("controllers") as Folder),
+	export function getModules() {
+		const shared = ReplicatedStorage.WaitForChild("src") as Folder
+		const boundary = RunService.IsServer()
+			? (ServerScriptService.WaitForChild("src") as Folder)
+			: (StarterPlayer.WaitForChild("StarterPlayerScripts").WaitForChild("src") as Folder)
+
+		const src = [
+			boundary,
+			shared,
 		]
+
+		return src
 			.map((dir) => {
 				return dir
 					.GetDescendants()
 					.filter(
 						(child): child is ModuleScript =>
-							child.IsA("ModuleScript") &&
-							paths.some((path) => child.FindFirstAncestor(path) !== undefined),
+							child.IsA("ModuleScript") && child.Parent!.Name === (child.IsDescendantOf(shared) ?  "services" : FOLDER_KEYWORD)
 					);
 			})
 			.reduce((acc, curr) => [...acc, ...curr]);
