@@ -70,7 +70,7 @@ export namespace Loader {
 		}
 
 		const classInstance = "default" in result! ? result!.default : result;
-		if (type(getmetatable(classInstance!)) !== "table") {
+		if (type(classInstance!) !== "table") {
 			warn(`did not recognize ${module} as a service/controller!`);
 			return;
 		}
