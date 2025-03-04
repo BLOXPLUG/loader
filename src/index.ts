@@ -11,7 +11,7 @@ interface Importer {
 }
 
 const IS_SERVER = RunService.IsServer()
-const FOLDER_KEYWORD = IS_SERVER ? "services" : "controllers"
+const FOLDER_KEYWORD = IS_SERVER ? "services" : "controller"
 
 export namespace Loader {
 	/**
@@ -95,7 +95,7 @@ export namespace Loader {
 					.GetDescendants()
 					.filter(
 						(child): child is ModuleScript =>
-							child.IsA("ModuleScript") && child.Parent!.Name === (child.IsDescendantOf(shared) ?  "services" : FOLDER_KEYWORD)
+							child.IsA("ModuleScript") && child!.Name.match(`-${child.IsDescendantOf(shared) ? "service" : FOLDER_KEYWORD}`)[0] !== undefined
 					);
 			})
 			.reduce((acc, curr) => [...acc, ...curr]);
