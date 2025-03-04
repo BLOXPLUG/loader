@@ -11,7 +11,7 @@ interface Importer {
 }
 
 const IS_SERVER = RunService.IsServer()
-const FOLDER_KEYWORD = IS_SERVER ? "services" : "controller"
+const FOLDER_KEYWORD = IS_SERVER ? "service" : "controller"
 
 export namespace Loader {
 	/**
